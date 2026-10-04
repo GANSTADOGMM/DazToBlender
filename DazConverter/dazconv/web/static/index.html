@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DazConv - Daz assets to FBX, glTF &amp; OBJ</title>
+<link rel="stylesheet" href="/app.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128230;</text></svg>" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three.module.min.js",
+    "three/addons/": "/vendor/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="26" height="26">
+        <path d="M16 2 29 9v14L16 30 3 23V9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M3 9l13 7 13-7M16 16v14" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".65"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>DazConv</h1>
+      <p>Daz assets &rarr; FBX &middot; glTF &middot; OBJ <span class="muted">&mdash; free, offline, no Daz Studio needed</span></p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <span class="pill" id="versionPill">v-</span>
+    <button class="btn ghost" id="btnLibrary" title="Browse your Daz content library">Library</button>
+    <button class="btn ghost" id="btnSettings" title="Content directories and output folder">Settings</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- ------------------------------------------------ left: input + options -->
+  <section class="panel panel-left">
+    <div class="panel-scroll">
+      <h2 class="section-title">1 &middot; Source</h2>
+
+      <div id="dropzone" class="dropzone">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M12 16V4m0 0L7 9m5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <strong>Drop .duf / .dsf files here</strong>
+        <span class="muted small">or an entire content folder</span>
+        <div class="dz-buttons">
+          <button class="btn small" id="btnPickFiles">Choose files</button>
+          <button class="btn small ghost" id="btnPickFolder">Choose folder</button>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".duf,.dsf" hidden />
+        <input type="file" id="folderInput" webkitdirectory directory multiple hidden />
+      </div>
+
+      <div class="row gap">
+        <button class="btn ghost small full" id="btnBrowse">Browse library&hellip;</button>
+        <button class="btn ghost small full" id="btnDemo" title="Creates a small Daz-format sample library you can convert right away">Load demo asset</button>
+      </div>
+
+      <div id="selectedList" class="selected-list" aria-live="polite"></div>
+
+      <h2 class="section-title">2 &middot; Output formats</h2>
+      <div class="format-grid" id="formatGrid"></div>
+
+      <h2 class="section-title">3 &middot; Options</h2>
+      <div class="options">
+        <label class="switch"><input type="checkbox" id="optSkeleton" checked><span></span>
+          <div><b>Skeleton &amp; skin weights</b><small>Bones, bind pose, vertex weights</small></div></label>
+        <label class="switch"><input type="checkbox" id="optMorphs" checked><span></span>
+          <div><b>Morphs / blend shapes</b><small>Exported as shape keys</small></div></label>
+        <label class="switch"><input type="checkbox" id="optHd"><span></span>
+          <div><b>Include HD morphs</b><small>*_HD_div* -- usually unusable at base resolution</small></div></label>
+        <label class="switch"><input type="checkbox" id="optCopyTex" checked><span></span>
+          <div><b>Copy textures</b><small>Into a <code>textures/</code> folder next to the model</small></div></label>
+        <label class="switch"><input type="checkbox" id="optEmbed"><span></span>
+          <div><b>Embed textures</b><small>Pack images inside the file (bigger, self-contained)</small></div></label>
+        <label class="switch"><input type="checkbox" id="optMerge"><span></span>
+          <div><b>Merge all meshes</b><small>One object; drops rigging and morphs</small></div></label>
+
+        <div class="field">
+          <label for="optPose">Pose</label>
+          <select id="optPose">
+            <option value="rest">Rest / bind pose (recommended)</option>
+            <option value="scene">Pose saved in the scene</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="optInfluences">Max bone influences <span class="val" id="influencesVal">8</span></label>
+          <input type="range" id="optInfluences" min="1" max="12" step="1" value="8" />
+        </div>
+        <div class="field">
+          <label for="optScale">Scale <span class="val" id="scaleVal">1.00&times;</span></label>
+          <input type="range" id="optScale" min="0.01" max="4" step="0.01" value="1" />
+        </div>
+        <div class="field">
+          <label for="optMorphFilter">Only morphs matching</label>
+          <input type="text" id="optMorphFilter" placeholder="e.g. eCTRL*, smile  (blank = all)" />
+        </div>
+      </div>
+
+      <h2 class="section-title">4 &middot; Destination</h2>
+      <div class="field">
+        <div class="path-row">
+          <input type="text" id="outputDir" spellcheck="false" />
+          <button class="btn small ghost" id="btnReveal" title="Open in file manager">Open</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <button class="btn primary big full" id="btnConvert" disabled>Convert</button>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- center: viewer -->
+  <section class="panel panel-center">
+    <div class="viewer-toolbar">
+      <div class="vt-left">
+        <span id="viewerTitle" class="viewer-title">3D preview</span>
+        <span id="viewerStats" class="chips"></span>
+      </div>
+      <div class="vt-right">
+        <button class="btn icon" id="btnWire" title="Wireframe">Wire</button>
+        <button class="btn icon" id="btnBones" title="Show skeleton">Bones</button>
+        <button class="btn icon" id="btnTex" title="Toggle textures">Tex</button>
+        <button class="btn icon" id="btnSpin" title="Turntable">Spin</button>
+        <button class="btn icon" id="btnFrame" title="Reset view">Fit</button>
+      </div>
+    </div>
+    <div id="viewport" class="viewport">
+      <div class="viewport-empty" id="viewportEmpty">
+        <div class="ve-inner">
+          <svg viewBox="0 0 24 24" width="46" height="46" aria-hidden="true">
+            <path d="M12 2 21 7v10l-9 5-9-5V7z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 7l9 5 9-5M12 12v10" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+          </svg>
+          <p>Convert something to see it here</p>
+          <span class="muted small">The preview uses the converted geometry, materials, rig and morphs &mdash; what you see is what the file contains.</span>
+        </div>
+      </div>
+      <div class="morph-panel" id="morphPanel" hidden>
+        <div class="mp-head"><b>Morphs</b><button class="btn icon tiny" id="btnMorphReset">reset</button></div>
+        <div class="mp-body" id="morphSliders"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- right: queue -->
+  <section class="panel panel-right">
+    <div class="panel-head">
+      <h2 class="section-title tight">Queue</h2>
+      <button class="btn icon tiny" id="btnClearJobs" title="Remove finished jobs">clear</button>
+    </div>
+    <div class="jobs" id="jobList"></div>
+    <div class="panel-foot-note" id="warningBox"></div>
+  </section>
+</main>
+
+<footer class="statusbar">
+  <span id="statusText">Ready</span>
+  <span class="spacer"></span>
+  <span id="contentDirsStatus" class="muted small"></span>
+</footer>
+
+<!-- ------------------------------------------------------------- modals -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Title</h3>
+      <button class="btn icon" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

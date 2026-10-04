@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dazconv"
+dynamic = ["version"]
+description = "Convert Daz Studio assets (.duf/.dsf) to FBX, glTF/GLB and OBJ without Daz Studio"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "DazConv contributors" }]
+keywords = ["daz", "dson", "duf", "dsf", "fbx", "gltf", "glb", "obj",
+            "3d", "converter", "genesis", "blender", "unreal", "unity"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Web Environment",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics :: 3D Modeling",
+    "Topic :: Utilities",
+]
+
+# No runtime dependencies, on purpose: the whole pipeline — DSON parsing,
+# geometry, skinning, morphs, the FBX/glTF/OBJ writers, the PNG encoder and
+# the HTTP server — is written against the Python standard library, and
+# three.js is vendored for the browser UI.
+dependencies = []
+
+[project.optional-dependencies]
+# Only needed to run the optional cross-check tests against real importers.
+validate = ["bpy; python_version>='3.11'", "trimesh", "pygltflib", "numpy"]
+
+[project.scripts]
+dazconv = "dazconv.cli:main"
+
+[project.gui-scripts]
+dazconv-app = "dazconv.cli:main_serve"
+
+[project.urls]
+Homepage = "https://github.com/GANSTADOGMM/DazToBlender"
+Source = "https://github.com/GANSTADOGMM/DazToBlender"
+
+[tool.setuptools.dynamic]
+version = { attr = "dazconv.version.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["dazconv*"]
+
+[tool.setuptools.package-data]
+dazconv = [
+    "web/static/*.html",
+    "web/static/*.css",
+    "web/static/js/*.js",
+    "web/static/vendor/*.js",
+    "web/static/vendor/jsm/**/*.js",
+]
