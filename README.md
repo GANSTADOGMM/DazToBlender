@@ -16,6 +16,7 @@ A Daz Studio Plugin based on Daz Bridge Library, allowing transfer of Daz Studio
 6. How to QA Test
 7. How to Develop
 8. Directory Structure
+9. Stand-alone converter (dazconv)
 
 
 ## 1. About the Bridge
@@ -153,6 +154,30 @@ The directory structure is as follows:
 - `dzbridge-common`:          Files from the Daz Bridge Library used by DazStudioPlugin
   - `Extras` :                Supplemental scripts and support files to help the conversion process, especially for game-engines and other real-time appllications.
 - `Test`:                     Scripts and generated output (reports) used for Quality Assurance Testing.
+- `dazconv`:                   Stand-alone Daz-to-FBX converter (pure Python; see below)
+
+
+## 9. Stand-alone converter (dazconv)
+
+The bridge above is a Daz Studio plugin: it needs the Daz SDK, the FBX SDK and
+a running copy of Daz Studio. `dazconv/` is an additional, self-contained tool
+that converts Daz assets on disk to FBX with **no Daz Studio, no Blender and no
+third-party Python packages** — just the standard library.
+
+```bash
+# Web app: drag & drop, live 3D preview, every export option
+python -m dazconv.server --library-root "/path/to/My DAZ 3D Library"
+
+# CLI: single files or batches
+python -m dazconv.cli character.duf -o out/
+```
+
+It reads `.duf`/`.daz` scenes, `.dsf` figures/props/UV sets/morphs and `.obj`,
+and writes ASCII FBX 7.4 with mesh, skeleton, skin weights, UVs, materials and
+optional blend shapes. Output is verified against
+[ufbx](https://github.com/ufbx/ufbx), an independent FBX parser.
+
+Full documentation: [`dazconv/README.md`](dazconv/README.md).
 
 [OwnerURL]: https://www.daz3d.com
 [TwitterURL]: https://twitter.com/Daz3d

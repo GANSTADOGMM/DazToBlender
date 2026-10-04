@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dazconv &mdash; Daz to FBX converter</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>daz<span>conv</span></h1>
+    <p class="tag">Daz Studio assets &rarr; FBX, entirely in Python</p>
+  </div>
+  <div class="meta" id="meta">connecting&hellip;</div>
+</header>
+
+<main>
+  <!-- ---------------------------------------------------------- left rail -->
+  <section class="panel inputs">
+    <h2>1 &middot; Input</h2>
+
+    <div id="dropzone" class="dropzone" tabindex="0">
+      <div class="dz-inner">
+        <div class="dz-icon">&#8615;</div>
+        <p><strong>Drop a .duf, .daz, .dsf or .obj file here</strong></p>
+        <p class="hint">or click to browse &middot; everything stays on this machine</p>
+      </div>
+      <input type="file" id="fileinput" accept=".duf,.daz,.dsf,.obj" hidden>
+    </div>
+    <div id="fileline" class="fileline"></div>
+
+    <details class="library" id="librarybox">
+      <summary>Content library <span id="rootlabel"></span></summary>
+      <div class="lib-controls">
+        <input type="search" id="libfilter" placeholder="filter assets&hellip;">
+        <button id="libscan" class="ghost">Scan</button>
+      </div>
+      <ul id="liblist" class="liblist"><li class="empty">Not scanned yet.</li></ul>
+    </details>
+  </section>
+
+  <!-- ------------------------------------------------------------- centre -->
+  <section class="panel viewer-panel">
+    <h2>2 &middot; Preview</h2>
+    <div class="viewer-wrap">
+      <canvas id="gl" width="900" height="620"></canvas>
+      <div class="viewer-overlay" id="overlay">
+        <span id="ovl-title">no model loaded</span>
+      </div>
+      <div class="viewer-tools">
+        <button id="btn-fit" class="ghost" title="Frame the model">Fit</button>
+        <button id="btn-wire" class="ghost" title="Toggle wireframe">Wire</button>
+        <button id="btn-bones" class="ghost" title="Toggle skeleton">Bones</button>
+        <button id="btn-spin" class="ghost" title="Turntable">Spin</button>
+      </div>
+      <div class="viewer-legend" id="legend"></div>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------- right rail -->
+  <section class="panel outputs">
+    <h2>3 &middot; Export</h2>
+
+    <div class="options">
+      <label class="chk"><input type="checkbox" id="opt_triangulate"> Triangulate</label>
+      <label class="chk"><input type="checkbox" id="opt_skeleton" checked> Skeleton</label>
+      <label class="chk"><input type="checkbox" id="opt_weights" checked> Skin weights</label>
+      <label class="chk"><input type="checkbox" id="opt_materials" checked> Materials</label>
+      <label class="chk"><input type="checkbox" id="opt_flipuv" checked> Flip UV V</label>
+      <label class="chk"><input type="checkbox" id="opt_smooth" checked> Smooth normals</label>
+      <label class="chk"><input type="checkbox" id="opt_blendshapes"> Blend shapes</label>
+
+      <div class="row">
+        <label for="opt_upaxis">Up axis</label>
+        <select id="opt_upaxis"><option value="y">Y up</option><option value="z">Z up</option></select>
+      </div>
+      <div class="row">
+        <label for="opt_influences">Max influences</label>
+        <input type="number" id="opt_influences" min="1" max="8" value="4">
+      </div>
+      <div class="row">
+        <label for="opt_scale">Scale</label>
+        <input type="number" id="opt_scale" step="0.01" value="1">
+      </div>
+      <div class="row">
+        <label for="opt_unit">Unit (cm)</label>
+        <input type="number" id="opt_unit" step="0.01" value="1">
+      </div>
+      <div class="row grow">
+        <label for="opt_morph">Morphs <span class="hint">Name=0.8, comma separated</span></label>
+        <input type="text" id="opt_morph" placeholder="FBMHeavy=0.8">
+      </div>
+    </div>
+
+    <button id="convert" class="primary" disabled>Convert to FBX</button>
+
+    <div class="progress" id="progress" hidden>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="stage" id="stage">queued</div>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <div id="warnings" class="warnings"></div>
+  </section>
+</main>
+
+<footer>
+  <span id="footerinfo"></span>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
